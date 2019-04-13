@@ -69,7 +69,6 @@ class CymbolCheckerVisitor(CymbolVisitor):
 
 	# To test
 	def visitEqExpr(self, ctx:CymbolParser.EqExprContext):
-		result = None
 		left = self.visit(ctx.expr()[0])
 		right= self.visit(ctx.expr()[1])
 		if left == Type.BOOLEAN and right == Type.BOOLEAN:
@@ -106,7 +105,6 @@ class CymbolCheckerVisitor(CymbolVisitor):
 
 	# To test
 	def visitSignedExpr(self, ctx:CymbolParser.SignedExprContext):
-		result = None
 		tyype = self.visit(ctx.expr())
 		if tyype == Type.INT:
 			return Type.INT
@@ -121,7 +119,6 @@ class CymbolCheckerVisitor(CymbolVisitor):
 
 	# To test 
 	def visitNotExpr(self, ctx:CymbolParser.NotExprContext):
-		result = None
 		tyype = self.visit(ctx.expr())
 		if tyype == Type.BOOLEAN:
 			return Type.BOOLEAN
@@ -134,7 +131,6 @@ class CymbolCheckerVisitor(CymbolVisitor):
 
 	# To test
 	def visitMulDivExpr(self, ctx:CymbolParser.MulDivExprContext):
-		result = None
 		left = self.visit(ctx.expr()[0])
 		right= self.visit(ctx.expr()[1])
 		if left == Type.FLOAT and right == Type.FLOAT:
@@ -152,11 +148,24 @@ class CymbolCheckerVisitor(CymbolVisitor):
 			exit(1)
 		return result
 
+	# To test
+	def visitComparisonExpr(self, ctx:CymbolParser.ComparisonExprContext):
+		left = self.visit(ctx.expr()[0])
+		right= self.visit(ctx.expr()[1])
+		if (left == Type.INT or left == Type.FLOAT) and (right == Type.INT or right == Type.FLOAT):
+			return Type.BOOLEAN
+		else:
+			# TODO text of error
+			result = Type.VOID
+			print("Mensagem de erro 1...")
+			exit(1)
+		return result
+
 	#Done
 	def visitVarDecl(self, ctx:CymbolParser.VarDeclContext):
 		var_name = ctx.ID().getText()
 		tyype = ctx.tyype().getText()
-		print("tyype = " + tyype)
+		# print("tyype = " + tyype)
 		
 		if (tyype == Type.VOID):
 			result = Type.VOID
@@ -165,7 +174,7 @@ class CymbolCheckerVisitor(CymbolVisitor):
 		else:
 			if ctx.expr() != None:
 				init = ctx.expr().accept(self)
-				print("init = " + init)
+				# print("init = " + init)
 				if init != tyype:
 					print("Mensagem de erro 2...")
 					exit(2)
@@ -176,18 +185,27 @@ class CymbolCheckerVisitor(CymbolVisitor):
 		print("saved variable " + var_name + " of type " + tyype)
 		return result
 
-	#Done
+	#To test
 	def visitAddSubExpr(self, ctx:CymbolParser.AddSubExprContext):
 		left = ctx.expr()[0].accept(self)
 		right = ctx.expr()[1].accept(self)
 
 		if left == Type.INT and right == Type.INT:
 			result = Type.INT
+		elif left == Type.FLOAT and right == Type.FLOAT:
+			return Type.FLOAT
+		elif left == Type.INT and right == Type.FLOAT:
+			return Type.FLOAT
+		elif left == Type.FLOAT and right == Type.INT:
+			return Type.FLOAT
+		elif ctx.op.getText() == "+" and left == Type.STRING and right == Type.INT or right == Type.FLOAT or right == Type.STRING or right == Type.BOOLEAN:
+			return Type.STRING
+		elif ctx.op.getText() == "+" and right == Type.STRING and left == Type.INT or left == Type.FLOAT or left == Type.STRING or left == Type.BOOLEAN:
+			return Type.STRING
 		else:
 			result = Type.VOID
 			print("Mensagem de erro 3...")
 			exit()
-		
 		print("addition or subtraction of " + left + " " + right + " that results in a " + result)
 		return result
 
